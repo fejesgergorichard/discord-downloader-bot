@@ -5,7 +5,7 @@ from enum import Enum
 from datetime import datetime
 
 # === CONFIG ===
-TOKEN = "YOUR_BOT_TOKEN"  # replace with your bot token
+TOKEN = "MTQxNDMyNDYzNzc3MjQxOTE2NA.GyOTki.fdy4bCyQQNMwWkD_ohKjmBjrhIK36rwkI7hmdU" 
 VIDEO_CHANNEL_ID = 1413212543832555540 
 VIDEO_OUTPUT_FOLDER = r"D:\MUSIC\GFX\ifeelmanythings\VIDEOS\Raw"
 
@@ -82,7 +82,8 @@ async def check_channel_history(channelId: int, mode: DownloadMode):
     successCount = 0
 
     async for message in channel.history(limit=200):
-        count += 1
+        if should_process_message(message, client):
+            count += 1
         success = await process_message(message, mode)
 
         if success:
