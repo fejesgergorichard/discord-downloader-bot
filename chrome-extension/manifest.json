@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube to Discord",
+  "version": "1.0",
+  "description": "Send YouTube video URLs to Discord channel",
+  "permissions": ["contextMenus", "tabs", "scripting"],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
