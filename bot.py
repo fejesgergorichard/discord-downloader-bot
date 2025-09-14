@@ -7,7 +7,7 @@ from datetime import datetime
 # === CONFIG ===
 TOKEN = "YOUR_BOT_TOKEN"  # replace with your bot token
 VIDEO_CHANNEL_ID = 1413212543832555540 
-VIDEO_OUTPUT_FOLDER = r"D:\MUSIC\GFX\ifeelmanythings\VIDEOS\Raw\Instagram"
+VIDEO_OUTPUT_FOLDER = r"D:\MUSIC\GFX\ifeelmanythings\VIDEOS\Raw"
 
 AUDIO_CHANNEL_ID = 1414330646955954317 
 AUDIO_OUTPUT_FOLDER = r"D:\sidejoy_packs\_Song Samples"
@@ -36,40 +36,61 @@ def should_process_message(message, client):
 
     return True
 
+def getTargetFolder(mode: DownloadMode, category: str):
+    if mode == DownloadMode.AUDIO:
+        category_folder = AUDIO_OUTPUT_FOLDER
+    else:
+        category_folder = os.path.join(VIDEO_OUTPUT_FOLDER, category)
+    return category_folder
+
 
 async def process_message(message: discord.Message, mode: DownloadMode):
     """Download video from supported link if not already processed."""
     if not should_process_message(message, client):
-        return
+        return False
     parts = message.content.strip().split()
     url = parts[0]
     category = parts[1] if len(parts) > 1 else "Uncategorized"
+    category_folder = getTargetFolder(mode, category)
 
-    category_folder = os.path.join(VIDEO_OUTPUT_FOLDER, category)
     os.makedirs(category_folder, exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-    if mode == DownloadMode.AUDIO:
-        output_template = os.path.join(AUDIO_OUTPUT_FOLDER, "%(title)s.%(ext)s")
+    if category.lower() == "cars" or mode == DownloadMode.AUDIO:
+        outputUri_template = os.path.join(category_folder, "%(title)s.%(ext)s")
     else:
-        output_template = os.path.join(category_folder, f"{category}_IG_{timestamp}.%(ext)s")
+        outputUri_template = os.path.join(category_folder, f"{category}_IG_{timestamp}.%(ext)s")
 
     try:
         subprocess.run(
-            ["yt-dlp", "-o", output_template, url] + (["-x"] if mode == DownloadMode.AUDIO else []),
+            ["yt-dlp", "-o", outputUri_template, url] + (["-x"] if mode == DownloadMode.AUDIO else []),
             check=True
         )
         await message.add_reaction("✅")
+        return True
     except Exception as e:
         await message.add_reaction("❌")
         await message.channel.send(f"Error downloading {url}: {e}")
+        return False
+
 
 async def check_channel_history(channelId: int, mode: DownloadMode):
     print(f"Checking channel history for channel: '{channelId}' in mode: '{mode}'")
     channel = client.get_channel(channelId)
+    count = 0
+    successCount = 0
+
     async for message in channel.history(limit=200):
-        await process_message(message, mode)
+        count += 1
+        success = await process_message(message, mode)
+
+        if success:
+            successCount += 1
+
+    if count > 0:
+        await channel.send(f"✅ Successfully Processed {successCount}/{count} messages in mode: {mode}.")
+
 
 @client.event
 async def on_ready():
