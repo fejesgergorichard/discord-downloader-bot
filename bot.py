@@ -43,14 +43,42 @@ def getTargetFolder(mode: DownloadMode, category: str):
         category_folder = os.path.join(VIDEO_OUTPUT_FOLDER, category)
     return category_folder
 
+def build_yt_dlp_cmd(url: str, output: str, mode: DownloadMode, fallback: bool = False) -> list[str]:
+    """
+    Factory for yt-dlp commands.
+    - Audio: extracts audio, tries mp3 first, m4a if fallback=True.
+    - Video: tries mp4 first, mkv if fallback=True.
+    """
+    if mode == DownloadMode.AUDIO:
+        audio_format = "m4a" if fallback else "mp3"
+        return [
+            "yt-dlp",
+            "-o", output,
+            "-x",
+            "--audio-format", audio_format,
+            url,
+        ]
+    else:
+        merge_format = "mkv" if fallback else "mp4"
+        return [
+            "yt-dlp",
+            "-o", output,
+            "--merge-output-format", merge_format,
+            url,
+        ]
 
 async def process_message(message: discord.Message, mode: DownloadMode):
     """Download video from supported link if not already processed."""
     if not should_process_message(message, client):
         return False
+        
+    print(f"Processing message: '{message}' in mode: '{mode}'")
+    await message.add_reaction("👀")
+
     parts = message.content.strip().split()
     url = parts[0]
     category = parts[1] if len(parts) > 1 else "Uncategorized"
+    title = f"{parts[2]}.%(ext)s" if len(parts) > 2 else "%(title)s.%(ext)s"
     category_folder = getTargetFolder(mode, category)
 
     os.makedirs(category_folder, exist_ok=True)
@@ -58,17 +86,28 @@ async def process_message(message: discord.Message, mode: DownloadMode):
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
     if category.lower() == "cars" or mode == DownloadMode.AUDIO:
-        outputUri_template = os.path.join(category_folder, "%(title)s.%(ext)s")
+        outputUri_template = os.path.join(category_folder, title)
     else:
         outputUri_template = os.path.join(category_folder, f"{category}_IG_{timestamp}.%(ext)s")
 
     try:
-        subprocess.run(
-            ["yt-dlp", "-o", outputUri_template, url] + (["-x"] if mode == DownloadMode.AUDIO else []),
-            check=True
-        )
+        cmd = build_yt_dlp_cmd(url, outputUri_template, mode, fallback=False)
+        result = subprocess.run(cmd, capture_output=True, text=True)
+
+        if result.returncode != 0:
+            fallback_cmd = build_yt_dlp_cmd(url, outputUri_template, mode, fallback=True)
+            fallback_result = subprocess.run(fallback_cmd, capture_output=True, text=True)
+            if fallback_result.returncode != 0:
+                raise Exception(
+                    f"Both main format (mp4/mp3) and fallback (mkv,m4a) failed.\n"
+                    f"MP4/MP3 error: {result.stderr}\n"
+                    f"M4A/MKV error: {fallback_result.stderr}"
+                )
+
+        await message.remove_reaction("👀", client.user)
         await message.add_reaction("✅")
         return True
+
     except Exception as e:
         await message.add_reaction("❌")
         await message.channel.send(f"Error downloading {url}: {e}")
