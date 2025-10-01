@@ -42,7 +42,7 @@ class MidJourneyCog(commands.Cog):
             return False
 
         for row in message.components:  # ActionRow
-            for component in row.children:  # Component objects (not discord.ui.Button)
+            for component in row.children:
                 # Component has .label attribute if it's a button
                 if getattr(component, "label", None) and component.label.startswith("U"):
                     print(f"Found U button: {component.label}")
@@ -72,10 +72,10 @@ class MidJourneyCog(commands.Cog):
 
             w, h = img.size
             quadrants = [
-                img.crop((0, 0, w // 2, h // 2)),           # top left
-                img.crop((w // 2, 0, w, h // 2)),           # top right
-                img.crop((0, h // 2, w // 2, h)),           # bottom left
-                img.crop((w // 2, h // 2, w, h))            # bottom right
+                img.crop((0, 0, w // 2, h // 2)), 
+                img.crop((w // 2, 0, w, h // 2)), 
+                img.crop((0, h // 2, w // 2, h)),  
+                img.crop((w // 2, h // 2, w, h)) 
             ]
 
             print(f"quadrants done {len(quadrants)}")

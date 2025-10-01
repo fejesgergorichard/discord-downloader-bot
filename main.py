@@ -17,7 +17,6 @@ async def on_ready():
 
 async def main():
     async with bot:
-        # Load extensions properly
         for cog in initial_cogs:
             await bot.load_extension(cog)
         await bot.start(config.TOKEN)
