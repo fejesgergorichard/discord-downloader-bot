@@ -1,4 +1,8 @@
-TOKEN = "mocskosfidesz"
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+TOKEN = os.getenv("DISCORD_TOKEN")
 
 VIDEO_CHANNEL_ID = 1413212543832555540
 VIDEO_OUTPUT_FOLDER = r"D:\MUSIC\GFX\ifeelmanythings\VIDEOS\Raw"
