@@ -44,7 +44,7 @@ class MidJourneyCog(commands.Cog):
         for row in message.components:  # ActionRow
             for component in row.children:
                 # Component has .label attribute if it's a button
-                if getattr(component, "label", None) and component.label.startswith("U"):
+                if getattr(component, "label", None) and component.label.startswith("U1"):
                     print(f"Found U button: {component.label}")
                     return True
 
