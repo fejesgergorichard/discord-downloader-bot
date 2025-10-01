@@ -56,6 +56,8 @@ class MidJourneyCog(commands.Cog):
         await self.process_message(message)
 
     async def process_message(self, message: discord.Message):
+        if not self.should_process(message):
+            return
         print(f"Processing Midjourney message: '{message}'")
         prompt = message.content or "mj"
         short_prompt = "_".join(prompt.split()[:4]).replace(":", "").replace("/", "").replace("\\", "")
