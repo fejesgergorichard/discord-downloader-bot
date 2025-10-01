@@ -16,7 +16,7 @@ class Downloader(commands.Cog):
     def should_process(self, message: discord.Message) -> bool:
         if message.author == self.bot.user:
             return False
-        if not any(domain in message.content for domain in ["instagram.com", "youtube.com", "youtu.be"]):
+        if not any(domain in message.content for domain in ["instagram.com", "youtube.com", "youtu.be", "soundcloud.com"]):
             return False
 
         for reaction in message.reactions:
