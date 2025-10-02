@@ -2,44 +2,54 @@ const DISCORD_VIDEO_WEBHOOK_URL = "https://discord.com/api/webhooks/141647095430
 const DISCORD_AUDIO_WEBHOOK_URL = "https://discord.com/api/webhooks/1423021826950435006/zI0g2nyHr6dqVN47dcLdBRdRdoFWsmTkxSRdiI9BV_zE8aNuS7j_o1V816a-cCM6yVBe";
 const CATEGORY = "Cars";
 
-// Create context menu
 chrome.runtime.onInstalled.addListener(() => {
+  // Links
   chrome.contextMenus.create({
-    id: "send-video-to-discord",
-    title: "Send video to Discord (Cars)",
+    id: "send-link-to-discord",
+    title: "Send link to Discord (Cars/SongSamples)",
     contexts: ["link"]
+  });
+
+  // Page
+  chrome.contextMenus.create({
+    id: "send-page-to-discord",
+    title: "Send current page URL to Discord (Cars/SongSamples)",
+    contexts: ["page"]
   });
 });
 
-// Handle click
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === "send-video-to-discord" && info.linkUrl) {
-    if (info.linkUrl.includes("youtube.com/watch") || info.linkUrl.includes("youtu.be/")) {
-      sendVideoToDiscord(info.linkUrl);
-    } else if (info.linkUrl.includes("soundcloud.com/") || info.linkUrl.includes("youtu.be/")) {
-      sendAudioToDiscord(info.linkUrl);
-    }
+  if (info.menuItemId === "send-link-to-discord" && info.linkUrl) {
+    handleUrl(info.linkUrl);
+  }
+
+  if (info.menuItemId === "send-page-to-discord" && tab?.url) {
+    handleUrl(tab.url);
   }
 });
 
+function handleUrl(url) {
+  if (url.includes("youtube.com/watch") || url.includes("youtu.be/")) {
+    sendVideoToDiscord(url);
+  } else if (url.includes("soundcloud.com/")) {
+    sendAudioToDiscord(url);
+  }
+}
+
 function sendVideoToDiscord(url) {
-  sendToDiscord(`${url} ${CATEGORY}`, DISCORD_VIDEO_WEBHOOK_URL)
+  sendToDiscord(`${url} ${CATEGORY}`, DISCORD_VIDEO_WEBHOOK_URL);
 }
 
 function sendAudioToDiscord(url) {
-  sendToDiscord(`${url}`, DISCORD_AUDIO_WEBHOOK_URL)
+  sendToDiscord(`${url}`, DISCORD_AUDIO_WEBHOOK_URL);
 }
 
 function sendToDiscord(sendContent, webhook) {
-  const payload = {
-    content: sendContent
-  };
+  const payload = { content: sendContent };
 
   fetch(webhook, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
   })
     .then((res) => {
