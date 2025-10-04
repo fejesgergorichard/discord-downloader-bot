@@ -9,11 +9,16 @@ intents.reactions = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-initial_cogs = ["cogs.downloader", "cogs.midjourney"]
+initial_cogs = ["cogs.downloader", "cogs.midjourney", "cogs.split"]
 
 @bot.event
 async def on_ready():
     print(f"✅ Bot connected as {bot.user}")
+    try:
+        synced = await bot.tree.sync()
+        print(f"Synced '{len(synced)}' slash commands.")
+    except Exception as e:
+        print(f"Sync error: {e}")
 
 async def main():
     async with bot:
