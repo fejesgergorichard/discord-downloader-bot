@@ -38,8 +38,13 @@ class Split(commands.Cog):
         if direction.lower() == "vertical":
             slice_width = w // parts
             for i in range(parts):
-                base_filename=f"{timestamp}_part_{i+1}.png"
+                counter = 1
+                base_filename=f"{timestamp}_part_{i+1}_{counter}.png"
                 filepath = os.path.join(config.MIDJOURNEY_OUTPUT_FOLDER, base_filename)
+                while os.path.exists(filepath):
+                    base_filename=f"{timestamp}_part_{i+1}_{counter}.png"
+                    filepath = os.path.join(config.MIDJOURNEY_OUTPUT_FOLDER, base_filename)
+                    counter += 1
                 left = i * slice_width
                 right = (i + 1) * slice_width if i < parts - 1 else w
                 crop = img.crop((left, 0, right, h))
@@ -52,8 +57,14 @@ class Split(commands.Cog):
         else:  # horizontal
             slice_height = h // parts
             for i in range(parts):
-                base_filename=f"{timestamp}_part_{i+1}.png"
+                counter = 1
+                base_filename=f"{timestamp}_part_{i+1}_{counter}.png"
                 filepath = os.path.join(config.MIDJOURNEY_OUTPUT_FOLDER, base_filename)
+                while os.path.exists(filepath):
+                    base_filename=f"{timestamp}_part_{i+1}_{counter}.png"
+                    filepath = os.path.join(config.MIDJOURNEY_OUTPUT_FOLDER, base_filename)
+                    counter += 1
+
                 top = i * slice_height
                 bottom = (i + 1) * slice_height if i < parts - 1 else h
                 crop = img.crop((0, top, w, bottom))
