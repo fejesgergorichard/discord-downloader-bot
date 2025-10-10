@@ -31,7 +31,7 @@ function handleUrl(url) {
   if (url.includes("youtube.com/watch") || url.includes("youtu.be/")) {
     sendVideoToDiscord(url, "Cars");
   } else if (url.includes("pinterest.com/")) {
-    sendAudioToDiscord(url, "pinterest");
+    sendVideoToDiscord(url, "pinterest");
   } else if (url.includes("soundcloud.com/")) {
     sendAudioToDiscord(url);
   }
